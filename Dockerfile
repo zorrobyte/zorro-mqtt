@@ -1,8 +1,25 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+FROM node:latest
 
-# Copy data for add-on
-COPY run.sh /
-RUN chmod a+x /run.sh
+WORKDIR /opt/tuya-mqtt
 
-CMD [ "/run.sh" ]
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl netbase wget
+RUN apt-get install -y --no-install-recommends git
+
+RUN git clone https://github.com/zorrobyte/tuya-mqtt.git /opt/tuya-mqtt
+
+# COPY ./devices/* ./devices/
+# COPY ./lib/* ./lib/
+# COPY ./package.json .
+# COPY ./merge-devices.js .
+# COPY ./tuya-mqtt.js .
+COPY /data/config.json .
+COPY /data/devices.conf .
+
+RUN npm install
+
+#ENV DEBUG=tuya-mqtt:*,TuyAPI
+ENV DEBUG=tuya-mqtt:*
+#ENV DEBUG=TuyAPI
+
+CMD ["node", "tuya-mqtt.js"]
